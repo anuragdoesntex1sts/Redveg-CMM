@@ -6,6 +6,8 @@
 
 **A full-stack commerce and operations platform for fresh fish, poultry, and meat.**
 
+<img src="https://readme-typing-svg.demolab.com?font=Inter&weight=600&size=18&pause=1400&color=2F855A&center=true&vCenter=true&width=720&height=36&lines=From+fresh+catalog+to+doorstep+delivery;One+connected+workspace+for+customers+and+teams;Built+for+the+rhythm+of+fresh-food+commerce" alt="From catalog to doorstep delivery — one connected commerce workspace" />
+
 [![Node.js](https://img.shields.io/badge/Node.js-22-43853D?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express-4-111111?logo=express&logoColor=white)](https://expressjs.com/)
