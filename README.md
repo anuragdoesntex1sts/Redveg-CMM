@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🥬 RedVeg
+<h1><img src="assets/redveg-logo.png" alt="RedVeg logo" width="200" /></h1>
 
 ### Fresh food commerce, from product discovery to doorstep delivery.
 
