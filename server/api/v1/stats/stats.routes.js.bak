@@ -1,0 +1,8 @@
+const express = require('express');
+const router = express.Router();
+const { getStats } = require('./stats.controller');
+
+// Mount routes
+router.get('/', getStats);
+
+module.exports = router;

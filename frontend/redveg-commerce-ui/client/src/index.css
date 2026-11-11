@@ -1,0 +1,120 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --primary: #b4232c;
+  --primary-foreground: #fff8f6;
+  --sidebar-primary: #b4232c;
+  --sidebar-primary-foreground: #ffffff;
+  --chart-1: #b4232c;
+  --chart-2: #2a7b48;
+  --chart-3: #d58a24;
+  --chart-4: #7f6660;
+  --chart-5: #de7d74;
+  --radius: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-control: 0.375rem;
+  --radius-hero: 1rem;
+  --background: #fffdf9;
+  --foreground: #251b18;
+  --card: #ffffff;
+  --card-foreground: #251b18;
+  --popover: #ffffff;
+  --popover-foreground: #251b18;
+  --secondary: #f6f1ec;
+  --secondary-foreground: #4f423e;
+  --muted: #f6f1ec;
+  --muted-foreground: #746762;
+  --accent: #f8e8e7;
+  --accent-foreground: #922029;
+  --destructive: #b4232c;
+  --destructive-foreground: #ffffff;
+  --border: #e8ded9;
+  --input: #e3d8d2;
+  --ring: #b4232c;
+  --sidebar: #17110f;
+  --sidebar-foreground: #ffffff;
+  --sidebar-accent: #29201d;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255,255,255,.1);
+  --sidebar-ring: #d74d54;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* Header theme variables */
+  --header-background: #fffdf9;
+  --header-foreground: #251b18;
+  --header-accent: #b4232c;
+  --header-border: #e8ded9;
+  --header-shadow: rgba(55,28,22,0.05);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html { scroll-behavior: smooth; }
+  body { @apply bg-background font-sans text-foreground antialiased; }
+  button:not(:disabled), [role="button"]:not([aria-disabled="true"]), [type="button"]:not(:disabled), [type="submit"]:not(:disabled), [type="reset"]:not(:disabled), a[href], select:not(:disabled), input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled) { @apply cursor-pointer; }
+  ::selection { background: rgba(180,35,44,.18); color: #611119; }
+}
+
+@layer components {
+  .container { width: 100%; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; }
+  .flex { min-height: 0; min-width: 0; }
+  button, a { transition-timing-function: var(--ease-out); }
+  button:active:not(:disabled), a:active { transform: scale(.97); }
+  @media (min-width: 640px) { .container { padding-left: 1.5rem; padding-right: 1.5rem; } }
+  @media (min-width: 1024px) { .container { max-width: 1320px; padding-left: 2rem; padding-right: 2rem; } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+
+@keyframes review-marquee {
+  from { transform: translateX(calc(-50% - 0.5rem)); }
+  to { transform: translateX(0); }
+}
+
+.review-marquee { animation: review-marquee 58s linear infinite; }

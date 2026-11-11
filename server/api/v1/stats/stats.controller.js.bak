@@ -1,0 +1,39 @@
+const getStats = async (req, res) => {
+  try {
+    const stats = [
+      {
+        label: "Today's Revenue",
+        value: "₹4,250",
+        trend: "+12.5% from yesterday",
+        tone: "green"
+      },
+      {
+        label: "Active Orders",
+        value: "14",
+        trend: "5 need action",
+        tone: "amber"
+      },
+      {
+        label: "Low Stock Items",
+        value: "8",
+        trend: "Requires attention",
+        tone: "red"
+      },
+      {
+        label: "Total Customers",
+        value: "1,245",
+        trend: "+32 this week",
+        tone: "neutral"
+      }
+    ];
+
+    res.status(200).json(stats);
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+module.exports = {
+  getStats
+};

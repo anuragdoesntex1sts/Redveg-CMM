@@ -1,0 +1,2 @@
+-- No demo customer records are seeded.
+-- Customer rows are created from real authenticated customer activity.

@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: redveg-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    region: oregon
+    disk:
+      name: redveg-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: TURSO_CATALOG_URL
+        sync: false
+      - key: TURSO_CATALOG_AUTH_TOKEN
+        sync: false
+      - key: TURSO_ORDERS_URL
+        sync: false
+      - key: TURSO_ORDERS_AUTH_TOKEN
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: ADMIN_WHATSAPP_NUMBER
+        sync: false
+      - key: ARCHIVE_CRON_TIME
+        value: "0 0 * * *"
+      - key: MAX_FILE_SIZE_MB
+        value: "5"
+      - key: SALT_ROUNDS
+        value: "10"
+      - key: DATA_PATH
+        value: "/data"

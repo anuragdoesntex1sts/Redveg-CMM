@@ -1,0 +1,95 @@
+const express = require('express');
+const path = require('path');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const apiRouter = require('./api/index');
+const frontendRouter = require('./routes/frontendRoutes');
+const { errorHandler } = require('./middleware/error.middleware');
+const logger = require('./utils/logger');
+
+const app = express();
+
+// The storefront may request browser geolocation; embedded third parties may not.
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'geolocation=(self)');
+  next();
+});
+
+const configuredCorsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5177,http://localhost:3000')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+// Middleware
+app.use(cookieParser());
+app.use(cors({
+  origin: (requestOrigin, callback) => {
+    // Non-browser requests (for example health checks) have no Origin header.
+    if (!requestOrigin) return callback(null, true);
+    if (configuredCorsOrigins.includes('*') || configuredCorsOrigins.includes(requestOrigin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+  credentials: true
+}));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, res, buffer) => {
+    if (req.originalUrl?.includes('/orders/razorpay/webhook')) req.rawBody = Buffer.from(buffer);
+  },
+}));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Initialize database connections with error handling
+try {
+  const { initializeDatabaseConnections, migrateCatalogCategories } = require('./config/turso');
+  initializeDatabaseConnections();
+  migrateCatalogCategories();
+  console.log('Database initialization completed');
+} catch (dbError) {
+  console.warn('Warning: Database initialization failed:', dbError.message);
+  console.warn('Some database-dependent features may not work correctly');
+}
+
+// Serve admin-uploaded, content-addressed image files from persistent server storage.
+const uploadRoot = path.resolve(process.env.UPLOADS_DIR || path.join(__dirname, 'uploads'));
+app.use('/uploads', express.static(uploadRoot, {
+  fallthrough: false,
+  maxAge: '1y',
+  immutable: true,
+  setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff'),
+}));
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// API routes - MUST come before frontendRouter
+app.use('/api/v1', apiRouter);
+
+// Frontend routes (handles SPA routing)
+app.use("/", frontendRouter);
+
+// Health check endpoint (for Render.com sleep prevention)
+app.get('/api/v1/health/ping', (req, res) => {
+  res.status(200).json({ status: 'alive', timestamp: new Date().toISOString() });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found',
+    requestedUrl: req.originalUrl,
+    method: req.method,
+    hint: 'Check the API documentation for available routes and ensure you are using the correct URL and HTTP method.'
+  });
+});
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
+
+module.exports = app;

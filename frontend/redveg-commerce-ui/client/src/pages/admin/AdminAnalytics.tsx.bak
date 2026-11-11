@@ -1,0 +1,250 @@
+import React, { useState, useEffect } from 'react';
+import { AdminShell } from '@/components/admin/AdminShell';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, Loader2, AlertTriangle } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  CartesianGrid,
+} from 'recharts';
+
+const AdminAnalytics = () => {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [range, setRange] = useState<'lifetime' | '12m' | '6m' | '30d'>('lifetime');
+  const [bucket, setBucket] = useState<'day' | 'week' | 'month'>('month');
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      if (range) params.append('range', range);
+      if (bucket) params.append('bucket', bucket);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/stats/revenue?${params.toString()}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.status}`);
+      }
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || 'Unknown error');
+      }
+      setData(result.data);
+    } catch (err: any) {
+      console.error('Error fetching analytics data:', err);
+      setError(err.message || 'Failed to load analytics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [range, bucket]);
+
+  const handleRefresh = () => {
+    fetchData();
+  };
+
+  if (loading) {
+    return (
+      <AdminShell title="Loading..." subtitle="Loading analytics data...">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+        </div>
+      </AdminShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminShell title="Error" subtitle="Failed to load analytics data">
+        <div className="p-6 text-center">
+          <AlertTriangle className="h-10 w-10 text-[#B4232C] mb-4" />
+          <p className="text-red-500">{error}</p>
+          <Button onClick={handleRefresh} className="mt-4 h-10 rounded-full bg-[#B4232C] px-4 font-black text-white">
+            Retry
+          </Button>
+        </div>
+      </AdminShell>
+    );
+  }
+
+  if (!data) {
+    return (
+      <AdminShell title="No data" subtitle="No analytics data available">
+        <div className="p-6 text-center">
+          <p className="text-muted-foreground">No confirmed orders found for the selected range.</p>
+        </div>
+      </AdminShell>
+    );
+  }
+
+  const { summary, series } = data;
+
+  const formatINR = (num: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(num);
+  };
+
+  return (
+    <AdminShell title="Reports" subtitle="Understand sales, products and campaign sources.">
+      <div className="grid gap-6 mb-4">
+        {/* Lifetime earnings card */}
+        <div className="rounded-[1.35rem] bg-white p-5 shadow-[0_12px_34px_rgba(61,33,27,.055)] ring-1 ring-black/[0.04]">
+          <div className="flex items-start justify-between">
+            <p className="text-sm font-bold text-muted-foreground">Lifetime earnings</p>
+          </div>
+          <p className="mt-3 text-4xl font-black tracking-[-0.035em]">{formatINR(summary.lifetimeRevenue)}</p>
+          <p className="mt-2 text-xs font-bold text-[#267345]">All time</p>
+        </div>
+
+        {/* Selected period revenue card */}
+        <div className="rounded-[1.35rem] bg-white p-5 shadow-[0_12px_34px_rgba(61,33,27,.055)] ring-1 ring-black/[0.04]">
+          <div className="flex items-start justify-between">
+            <p className="text-sm font-bold text-muted-foreground">{range === 'lifetime' ? 'Lifetime' : range === '12m' ? 'Last 12 months' : range === '6m' ? 'Last 6 months' : 'Last 30 days'} revenue</p>
+          </div>
+          <p className="mt-3 text-3xl font-black tracking-[-0.035em]">{formatINR(summary.periodRevenue)}</p>
+          <p className="mt-2 text-xs font-bold text-[#267345]">{summary.periodChangePercent >= 0 ? `+${summary.periodChangePercent.toFixed(1)}%` : `${summary.periodChangePercent.toFixed(1)}%`} vs previous period</p>
+        </div>
+
+        {/* Order count card */}
+        <div className="rounded-[1.35rem] bg-white p-5 shadow-[0_12px_34px_rgba(61,33,27,.055)] ring-1 ring-black/[0.04]">
+          <div className="flex items-start justify-between">
+            <p className="text-sm font-bold text-muted-foreground">Total orders</p>
+          </div>
+          <p className="mt-3 text-4xl font-black tracking-[-0.035em]">{summary.orderCount.toLocaleString('en-IN')}</p>
+          <p className="mt-2 text-xs font-bold text-[#267345]">In selected period</p>
+        </div>
+
+        {/* Average order value card */}
+        <div className="rounded-[1.35rem] bg-white p-5 shadow-[0_12px_34px_rgba(61,33,27,.055)] ring-1 ring-black/[0.04]">
+          <div className="flex items-start justify-between">
+            <p className="text-sm font-bold text-muted-foreground">Avg. order value</p>
+          </div>
+          <p className="mt-3 text-3xl font-black tracking-[-0.035em]">{formatINR(summary.averageOrderValue)}</p>
+          <p className="mt-2 text-xs font-bold text-[#267345]">Per order</p>
+        </div>
+      </div>
+
+      <div className="grid gap-6">
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground">Range:</span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setRange('lifetime')}
+                className={`px-3 py-1 rounded text-sm font-medium ${range === 'lifetime' ? 'bg-[#B4232C] text-white' : 'bg-[#F7F4F1] text-[#6B7280]'}`}
+              >
+                Lifetime
+              </button>
+              <button
+                onClick={() => setRange('12m')}
+                className={`px-3 py-1 rounded text-sm font-medium ${range === '12m' ? 'bg-[#B4232C] text-white' : 'bg-[#F7F4F1] text-[#6B7280]'}`}
+              >
+                Last 12M
+              </button>
+              <button
+                onClick={() => setRange('6m')}
+                className={`px-3 py-1 rounded text-sm font-medium ${range === '6m' ? 'bg-[#B4232C] text-white' : 'bg-[#F7F4F1] text-[#6B7280]'}`}
+              >
+                Last 6M
+              </button>
+              <button
+                onClick={() => setRange('30d')}
+                className={`px-3 py-1 rounded text-sm font-medium ${range === '30d' ? 'bg-[#B4232C] text-white' : 'bg-[#F7F4F1] text-[#6B7280]'}`}
+              >
+                Last 30D
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground">Bucket:</span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setBucket('day')}
+                className={`px-3 py-1 rounded text-sm font-medium ${bucket === 'day' ? 'bg-[#B4232C] text-white' : 'bg-[#F7F4F1] text-[#6B7280]'}`}
+              >
+                Day
+              </button>
+              <button
+                onClick={() => setBucket('week')}
+                className={`px-3 py-1 rounded text-sm font-medium ${bucket === 'week' ? 'bg-[#B4232C] text-white' : 'bg-[#F7F4F1] text-[#6B7280]'}`}
+              >
+                Week
+              </button>
+              <button
+                onClick={() => setBucket('month')}
+                className={`px-3 py-1 rounded text-sm font-medium ${bucket === 'month' ? 'bg-[#B4232C] text-white' : 'bg-[#F7F4F1] text-[#6B7280]'}`}
+              >
+                Month
+              </button>
+            </div>
+          </div>
+          <Button onClick={handleRefresh} className="mt-0 sm:mt-0 sm:self-end h-10 rounded-full bg-[#B4232C] px-4 font-black text-white">
+            <RefreshCw className="size-4 mr-2" /> Refresh
+          </Button>
+        </div>
+
+        {/* Charts */}
+        <div className="col-span-2">
+          <div class="rounded-[1.35rem] bg-white p-5 shadow-[0_12px_34px_rgba(61,33,27,.055)] ring-1 ring-black/[0.04]">
+            <h3 className="mb-4 text-lg font-black">Revenue over time</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={series}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="period" tick={{ render: (label: any) => label }} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="revenue" stroke="#B4232C" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="col-span-2">
+          <div class="rounded-[1.35rem] bg-white p-5 shadow-[0_12px_34px_rgba(61,33,27,.055)] ring-1 ring-black/[0.04]">
+            <h3 className="mb-4 text-lg font-bold">Order count over time</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={series}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="period" tick={{ render: (label: any) => label }} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="orders" fill="#B4232C" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 flex justify-between items-center">
+        <p className="text-xs text-muted-foreground">
+          Last updated: {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Earnings are calculated from backend-confirmed approved/completed orders. Pending and cancelled orders are excluded. Lifetime totals include historical/archived orders.
+        </p>
+      </div>
+    </AdminShell>
+  );
+};
+
+export default AdminAnalytics;

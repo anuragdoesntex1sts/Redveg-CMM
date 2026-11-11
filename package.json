@@ -1,0 +1,54 @@
+{
+  "name": "redveg-backend",
+  "version": "1.0.0",
+  "description": "Backend for RedVeg e-commerce platform",
+  "main": "server/server.js",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "start": "node server/server.js",
+    "build": "node -e \"console.log('No build step required for this backend')\"",
+    "dev": "nodemon server/server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "ecommerce",
+    "express",
+    "turso"
+  ],
+  "author": "RedVeg Team",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.450.0",
+    "@libsql/client": "^0.5.6",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.8",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.0",
+    "express": "^4.18.2",
+    "google-auth-library": "^11.1.0",
+    "jimp": "^1.6.1",
+    "jsonwebtoken": "^9.0.1",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.2",
+    "razorpay": "^2.9.8",
+    "resend": "^6.34.1",
+    "uuid": "^9.0.0",
+    "winston": "^3.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@firebase/util",
+      "esbuild",
+      "protobufjs"
+    ]
+  },
+  "pnpm.overrides": {
+    "node-fetch": "2.7.0"
+  }
+}
